@@ -79,26 +79,80 @@ function displayZipcodes(req, res){
         res.send('No zipcodes to display. Please insert zipcode and try again!')
     }
     let displayString = '';
+    let arrayOfRanges = [];
+  
+    // keep track of zipcodes you've processed so you don't duplicate your work
+    const seen = new Set();
 
-
-    for(let j = 0; j < zips.length-1; j++){
-        let currentZip = parseInt(zips[j]);
-        let k = 1;
-        let foundConsecutiveNumber = false;
-        // 97011, 98101, 98102, 98103,98117
-        while((currentZip+k).toString() === zips[j+k]){
-            console.log('inside', k)
-            foundConsecutiveNumber = true;
-            k++;
-        }
-        if(foundConsecutiveNumber){
-            displayString += currentZip + '-' + zips[j+k-1]+', ';
-            j = k;
+    function addRangeToArray(highest, lowest, array){
+        // determine what the given range looks like.
+        let range = '';
+        if(highest === lowest){
+            range = highest;
         } else {
-            displayString += currentZip +', ';
+            range = lowest+'-'+highest;
         }
-
+        if(seen.has(range)){
+            return;
+        }else {
+            seen.add(range);
+            return array.push(range);
+        }
     }
+
+    zips.forEach(zipcode => {
+        if(seen.has(zipcode)){
+            return;
+        }
+        let lowest = parseInt(zipcode);
+        let highest = parseInt(zipcode);
+        seen.add(highest);
+
+        while(cacheOfZips[highest + 1] !== undefined){
+            // if this falls in range with another number in cacheOfZips, look further.
+            highest += 1;
+            seen.add(highest);
+        }
+        while(cacheOfZips[lowest - 1] !== undefined){
+            lowest -= 1;
+            seen.add(lowest);
+        }
+        
+        addRangeToArray(highest, lowest, arrayOfRanges);
+    });
+
+    // now we need to sort the array by first five chars of each range.
+    // arrayOfRanges.sort((a,b) => {
+    //     return parseInt(a.slice(0,5))-parseInt(b.slice(0,5));
+    //   });
+    // now we need to make the string
+    // start string
+    displayString += arrayOfRanges[0];
+    // add middle
+    for(let i = 1; i < arrayOfRanges.length-1; i++){
+        displayString += ', ' + arrayOfRanges[i];
+    }
+    // and end
+    displayString += ', '+ arrayOfRanges[arrayOfRanges.length-1];
+
+    // for(let j = 0; j < zips.length-1; j++){
+    //     let currentZip = parseInt(zips[j]);
+    //     let k = 1;
+    //     let foundConsecutiveNumber = false;
+    //     // 97011, 98101, 98102, 98103,98117
+    //     while((currentZip+k).toString() === zips[j+k]){
+    //         console.log('inside', k)
+    //         foundConsecutiveNumber = true;
+    //         k++;
+    //     }
+    //     if(foundConsecutiveNumber){
+    //         displayString += currentZip + '-' + zips[j+k-1]+', ';
+    //         j = k;
+    //     } else {
+    //         displayString += currentZip +', ';
+    //     }
+
+    // }
 
 
 
