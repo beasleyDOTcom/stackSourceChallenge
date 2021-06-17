@@ -2,13 +2,17 @@ require('dotenv').config();
 const express = require('express');
 
 const app = express();
+app.use(express.json());
+app.use(express.urlencoded({extended:true}))
 
-const PORT = process.env.PORT;
 
 cacheOfZips = {};
 
-app.get('/insert/:zipcode',insertZipcode);
-app.get('/delete/:zipcode', deleteZipcode);
+// app.get('/insert/:zipcode', insertZipcode);
+
+// so I've been thinking a lot about this and I think I'm going to treat zipcodes like an id. A unique identifier
+app.put('/insert', insertZipcode);
+app.delete('/delete/:zipcode', deleteZipcode);
 app.get('/has/:zipcode', hasZipcode);
 app.get('/display', displayZipcodes);
 
@@ -32,43 +36,48 @@ function validateZipcode(zip){
     }
     
 }
-function insertZipcode(req, res){
-    let zip = req.params.zipcode;
-    let responseFromValidator = validateZipcode(zip);
+async function insertZipcode(req, res){
+
+  
+    let zip = req.body.zipcode;
+    let responseFromValidator = await validateZipcode(zip);
+    // console.log('response from validator: ', responseFromValidator, ' this is zip: ', zip)
     switch(responseFromValidator){
         case 0:
             cacheOfZips[zip] = zip;
-            res.send(`Zip code ${zip} inserted.`);
+            res.status(200).json(`Zip code ${zip} inserted.`);
             break;
         case 1:
-            res.send(zip + ' is not a valid zipcode! (For the purposes of this demonstration, a valid zipcode should consist of 5 consecutive integers');
+            res.status(404).json(zip + ' is not a valid zipcode! (For the purposes of this demonstration, a valid zipcode should consist of 5 consecutive integers');
             break;
         case 2:
-            res.send(zip + ' is not a valid zipcode! (For the purposes of this demonstration a valid zipcode must consist of whole numbers 1-9');
+            res.status(404).json(zip + ' is not a valid zipcode! (For the purposes of this demonstration a valid zipcode must consist of whole numbers 1-9');
             break;
         case 3: 
-            res.send(zip+ ' is already present --> No need to add it again!');
+            res.status(404).json(zip+ ' is already present --> No need to add it again!');
             break;
         default:
-            res.send('Somethings gone terribly wrong and you\'ve reached a case in a switch statement for which I did not account! If you can spare the time, I\'d love to know what zip you inserted to achieve this!');
+            res.status(404).json('Somethings gone terribly wrong and you\'ve reached a case in a switch statement for which I did not account! If you can spare the time, I\'d love to know what zip you inserted to achieve this!');
     }   
 }
 
 function deleteZipcode(req, res){
+    if(cacheOfZips[req.params.zipcode]==undefined){
+        res.status(404).json(`${req.params.zipcode} is not present in collection --> cannot delete.`)
+    }
     delete cacheOfZips[req.params.zipcode];
     if(cacheOfZips[req.params.zipcode]===undefined){
-        res.send(`Zip code ${req.params.zipcode} deleted.`)
+        res.status(200).json(`Zip code ${req.params.zipcode} deleted.`)
     } else {
-        res.send('there was an error deleting this zipcode')
+        res.status(404).json('there was an error deleting this zipcode')
     }
-
 }
 
 function hasZipcode(req, res){
     if(cacheOfZips[req.params.zipcode] !== undefined){
-        res.send('true');
+        res.status(200).json('true');
     } else {
-        res.send('false');
+        res.status(200).json('false');
     }
 }
 
@@ -76,7 +85,7 @@ function displayZipcodes(req, res){
 
     let zips = Object.keys(cacheOfZips).sort();
     if(zips.length < 1){
-        res.send('No zipcodes to display. Please insert zipcode and try again!')
+        res.status(200).json('No zipcodes to display. Please insert zipcode and try again!')
     }
     let displayString = '';
     let arrayOfRanges = [];
@@ -87,11 +96,7 @@ function displayZipcodes(req, res){
     function addRangeToArray(highest, lowest, array){
         // determine what the given range looks like.
         let range = '';
-        if(highest === lowest){
-            range = highest;
-        } else {
             range = lowest+'-'+highest;
-        }
         if(seen.has(range)){
             return;
         }else {
@@ -117,23 +122,41 @@ function displayZipcodes(req, res){
             lowest -= 1;
             seen.add(lowest);
         }
-        
-        addRangeToArray(highest, lowest, arrayOfRanges);
+
+        if(highest === lowest){
+            arrayOfRanges.push(highest);
+        } else {
+            addRangeToArray(highest, lowest, arrayOfRanges);
+        }
     });
 
-    // now we need to sort the array by first five chars of each range.
-    // arrayOfRanges.sort((a,b) => {
-    //     return parseInt(a.slice(0,5))-parseInt(b.slice(0,5));
-    //   });
     // now we need to make the string
     // start string
     displayString += arrayOfRanges[0];
-    // add middle
-    for(let i = 1; i < arrayOfRanges.length-1; i++){
-        displayString += ', ' + arrayOfRanges[i];
+
+    // if there is only one item, return.
+    if(arrayOfRanges.length ===1){
+        res.status(200).json(displayString)
+    } else {
+        // add middle
+        for(let i = 1; i < arrayOfRanges.length-1; i++){
+            displayString += ', ' + arrayOfRanges[i];
+        }
+        // and end
+        displayString += ', '+ arrayOfRanges[arrayOfRanges.length-1];
+
+        res.status(200).json(displayString)
     }
-    // and end
-    displayString += ', '+ arrayOfRanges[arrayOfRanges.length-1];
+
+}
+
+module.exports = {
+    server: app,
+    start: port => {
+        const PORT = port || process.env.PORT || 3000;
+        app.listen(PORT, () => console.log(`Glistening on PORT: ${PORT}`));
+    }
+}
 
     // for(let j = 0; j < zips.length-1; j++){
     //     let currentZip = parseInt(zips[j]);
@@ -153,14 +176,3 @@ function displayZipcodes(req, res){
     //     }
 
     // }
-
-
-
-    console.log('this is display string: ', displayString)
-    res.send(displayString)
-}
-
-
-app.listen(PORT, () => {
-    console.log(`Glistening on PORT: ${PORT}`)
-});
