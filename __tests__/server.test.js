@@ -20,29 +20,6 @@ describe('basic test of zipcode server', () => {
         expect(deleted.body).toStrictEqual('Zip code 98101 deleted.')
         expect(deleted.status).toBe(200);
     });
-
-    it('should display all zipcodes inserted into server', async () => {
-        await mockRequest.put('/insert').send({'zipcode': '98101'});
-        await mockRequest.put('/insert').send({'zipcode': '98103'});
-        await mockRequest.put('/insert').send({'zipcode': '98105'});
-
-        let expected = '98101, 98103, 98105';
-        let actual = await mockRequest.get('/display')
-        expect(actual.body).toStrictEqual(expected);
-    }); 
-
-    it('should combine zipcodes when possible', async () => {
-        await mockRequest.put('/insert').send({'zipcode': '98100'})
-        await mockRequest.put('/insert').send({'zipcode': '98102'})
-        let results = await mockRequest.get('/display').send();
-        expect(results.status).toStrictEqual(200);
-        expect(results.body).toStrictEqual('98100-98103, 98105');
-        await mockRequest.delete('/delete/98100').send();
-        await mockRequest.delete('/delete/98101').send();
-        await mockRequest.delete('/delete/98102').send();
-        await mockRequest.delete('/delete/98103').send();
-        await mockRequest.delete('/delete/98105').send();
-    });
 });
 
 
@@ -106,9 +83,53 @@ describe('/has', () => {
 });
 
 describe('/display', () => {
-    it('should say nothing to display', async () => {
+
+    it('should test response of display with no zipcodes to display', async () => {
+        let results = await mockRequest.get('/display');
+        expect(results.status).toStrictEqual(200);
+        expect(results.body).toStrictEqual('No zipcodes to display. Please insert zipcode and try again!')
+    });
+
+    it('should insert and display one zipcode', async () => {
+    
+        let results = await mockRequest.put('/insert').send({'zipcode': '98101'});
+        expect(results.body).toBe('Zip code 98101 inserted.')
+        let display = await mockRequest.get('/display');
+        expect(display.body).toStrictEqual('98101');
+        expect(display.status).toBe(200);
+    });
+
+    it('should display all zipcodes inserted into server', async () => {
+        await mockRequest.put('/insert').send({'zipcode': '98101'});
+        await mockRequest.put('/insert').send({'zipcode': '98103'});
+        await mockRequest.put('/insert').send({'zipcode': '98105'});
+
+        let expected = '98101, 98103, 98105';
+        let actual = await mockRequest.get('/display')
+        expect(actual.body).toStrictEqual(expected);
+    }); 
+
+    it('should combine zipcodes when possible', async () => {
+        await mockRequest.put('/insert').send({'zipcode': '98100'})
+        await mockRequest.put('/insert').send({'zipcode': '98102'})
         let results = await mockRequest.get('/display').send();
         expect(results.status).toStrictEqual(200);
-        expect(results.body).toStrictEqual('No zipcodes to display. Please insert zipcode and try again!');
+        expect(results.body).toStrictEqual('98100-98103, 98105');
+        await mockRequest.delete('/delete/98100').send();
+        await mockRequest.delete('/delete/98101').send();
+        await mockRequest.delete('/delete/98102').send();
+        await mockRequest.delete('/delete/98103').send();
+        await mockRequest.delete('/delete/98105').send();
     });
+
+    it('should display all zipcodes inserted into server', async () => {
+        await mockRequest.put('/insert').send({'zipcode': '98101'});
+        await mockRequest.put('/insert').send({'zipcode': '98103'});
+        await mockRequest.put('/insert').send({'zipcode': '98105'});
+
+        let expected = '98101, 98103, 98105';
+        let actual = await mockRequest.get('/display')
+        expect(actual.body).toStrictEqual(expected);
+    }); 
+
 });
