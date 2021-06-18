@@ -10,6 +10,7 @@
   },
   "scripts": {
     "start": "node start.js",
+    "prestart": "npm i",
     "watch": "nodemon app.js",
     "test-watch": "jest --watchAll",
     "test": "jest --coverage --verbose"
