@@ -13,6 +13,7 @@
     "prestart": "npm i && echo '' && echo '************* Hey! **************'  && echo  'Thanks for checking this out! I hope you had as much fun as I did making it!' && echo 'To stop the server hold control and press \"c\"'",
     "watch": "nodemon app.js",
     "test-watch": "jest --watchAll",
-    "test": "jest --coverage --verbose"
+    "test": "jest --coverage --verbose",
+    "pretest": "npm i"
   }
 }
