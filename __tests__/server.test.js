@@ -16,7 +16,7 @@ describe('basic test of zipcode server', () => {
     
         let results = await mockRequest.put('/insert').send({'zipcode': '98101'});
         expect(results.body).toBe('Zip code 98101 inserted.')
-        let deleted = await mockRequest.delete('/delete/98101').send();
+        let deleted = await mockRequest.delete('/delete/98101');
         expect(deleted.body).toStrictEqual('Zip code 98101 deleted.')
         expect(deleted.status).toBe(200);
     });
@@ -42,7 +42,7 @@ describe('/insert', () => {
         let results = await mockRequest.put('/insert').send({'zipcode':'98101'});
         expect(results.body).toStrictEqual('98101 is already present --> No need to add it again!');
         expect(results.status).toStrictEqual(404);
-        await mockRequest.delete('/delete/98101').send();
+        await mockRequest.delete('/delete/98101');
     });
 
     it('should not allow insertion of decimals', async () => {
@@ -55,28 +55,28 @@ describe('/insert', () => {
 
 describe('/delete', () => {
     it('should inform user that have tried to delete a zipcode that does not exist', async () => {
-        let results =  await mockRequest.delete('/delete/98101').send();
+        let results =  await mockRequest.delete('/delete/98101');
         expect(results.status).toStrictEqual(404);
         expect(results.body).toStrictEqual('98101 is not present in collection --> cannot delete.');
     });
     it('should inform the user of successful deletion', async () => {
         await mockRequest.put('/insert').send({'zipcode':'98101'});
-        let results =  await mockRequest.delete('/delete/98101').send();
+        let results =  await mockRequest.delete('/delete/98101');
         expect(results.status).toStrictEqual(200);
-        expect(results.body).toStrictEqual(`Zip code 98101 deleted.`)
+        expect(results.body).toStrictEqual(`Zip code 98101 deleted.`);
     });
 });
 
 describe('/has', () => {
     it('should return true if zipcode is present in collection', async () => {
         await mockRequest.put('/insert').send({'zipcode':'98101'});
-        let results = await mockRequest.get('/has/98101').send();
+        let results = await mockRequest.get('/has/98101');
         expect(results.status).toStrictEqual(200);
         expect(results.body).toStrictEqual('true');
     });
     it('should return false if zipcode is not present in collection', async () => {
         await mockRequest.delete('/delete/98101').send();
-        let results = await mockRequest.get('/has/98101').send();
+        let results = await mockRequest.get('/has/98101');
         expect(results.status).toStrictEqual(200);
         expect(results.body).toStrictEqual('false');
     });
@@ -105,21 +105,21 @@ describe('/display', () => {
         await mockRequest.put('/insert').send({'zipcode': '98105'});
 
         let expected = '98101, 98103, 98105';
-        let actual = await mockRequest.get('/display')
+        let actual = await mockRequest.get('/display');
         expect(actual.body).toStrictEqual(expected);
     }); 
 
     it('should combine zipcodes when possible', async () => {
         await mockRequest.put('/insert').send({'zipcode': '98100'})
         await mockRequest.put('/insert').send({'zipcode': '98102'})
-        let results = await mockRequest.get('/display').send();
+        let results = await mockRequest.get('/display');
         expect(results.status).toStrictEqual(200);
         expect(results.body).toStrictEqual('98100-98103, 98105');
-        await mockRequest.delete('/delete/98100').send();
-        await mockRequest.delete('/delete/98101').send();
-        await mockRequest.delete('/delete/98102').send();
-        await mockRequest.delete('/delete/98103').send();
-        await mockRequest.delete('/delete/98105').send();
+        await mockRequest.delete('/delete/98100');
+        await mockRequest.delete('/delete/98101');
+        await mockRequest.delete('/delete/98102');
+        await mockRequest.delete('/delete/98103');
+        await mockRequest.delete('/delete/98105');
     });
 
     it('should display all zipcodes inserted into server', async () => {
