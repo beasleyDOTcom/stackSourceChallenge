@@ -33,7 +33,13 @@ describe('/insert', () => {
     it('should not allow insertion of letters', async () => {
         let results = await mockRequest.put('/insert').send({'zipcode':'9810a'});
         expect(results.body).toStrictEqual('9810a is not a valid zipcode! (For the purposes of this demonstration a valid zipcode must consist of whole numbers 1-9');
-        expect(results.status).toStrictEqual(404);
+        expect(results.status).toStrictEqual(400);
+        
+    });
+    it('should not allow insertion of spaces', async () => {
+        let results = await mockRequest.put('/insert').send({'zipcode':' 8103'});
+        expect(results.body).toStrictEqual(' 8103 is not a valid zipcode! (For the purposes of this demonstration a valid zipcode must consist of whole numbers 1-9');
+        expect(results.status).toStrictEqual(400);
         
     });
 
@@ -41,14 +47,14 @@ describe('/insert', () => {
         await mockRequest.put('/insert').send({'zipcode':'98101'});
         let results = await mockRequest.put('/insert').send({'zipcode':'98101'});
         expect(results.body).toStrictEqual('98101 is already present --> No need to add it again!');
-        expect(results.status).toStrictEqual(404);
+        expect(results.status).toStrictEqual(400);
         await mockRequest.delete('/delete/98101');
     });
 
     it('should not allow insertion of decimals', async () => {
         let results = await mockRequest.put('/insert').send({'zipcode':'981.1'});
         expect(results.body).toStrictEqual('981.1 is not a valid zipcode! (For the purposes of this demonstration a valid zipcode must consist of whole numbers 1-9');
-        expect(results.status).toStrictEqual(404);
+        expect(results.status).toStrictEqual(400);
         '981.1 is not a valid zipcode! (For the purposes of this demonstration a valid zipcode must consist of whole numbers 1-9'
     });
 });

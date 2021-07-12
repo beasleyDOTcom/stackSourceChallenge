@@ -19,19 +19,20 @@ app.get('/display', displayZipcodes);
 function validateZipcode(zip){
     if(zip.length !== 5){
         return 1;
-    } else{
-        for(let i = 0; i < zip.length; i++){
-            if(zip[i] % 1 !== 0){
-                return 2;
-            }
-        }
-        // if this is reached we know that zip is 5 chars long and only integers
+    } else {
+
         // now test if zip is already in cacheOfZips
-        if(cacheOfZips[zip]===zip){
+        if(cacheOfZips[zip] === zip){
             // no need to insert --> already there!
             return 3;
-        } else {
+        }
+
+        let regex = /^\d{5}$/
+        if (regex.test(zip)){
+            // zip is five digits 0-9
             return 0;
+        } else {
+            return 2
         }
     }
     
@@ -48,22 +49,23 @@ async function insertZipcode(req, res){
             res.status(200).json(`Zip code ${zip} inserted.`);
             break;
         case 1:
-            res.status(404).json(zip + ' is not a valid zipcode! (For the purposes of this demonstration, a valid zipcode should consist of 5 consecutive integers');
+            res.status(400).json(zip + ' is not a valid zipcode! (For the purposes of this demonstration, a valid zipcode should consist of 5 consecutive integers');
             break;
         case 2:
-            res.status(404).json(zip + ' is not a valid zipcode! (For the purposes of this demonstration a valid zipcode must consist of whole numbers 1-9');
+            res.status(400).json(zip + ' is not a valid zipcode! (For the purposes of this demonstration a valid zipcode must consist of whole numbers 1-9');
             break;
         case 3: 
-            res.status(404).json(zip+ ' is already present --> No need to add it again!');
+            res.status(400).json(zip+ ' is already present --> No need to add it again!');
             break;
         default:
-            res.status(404).json('Somethings gone terribly wrong and you\'ve reached a case in a switch statement for which I did not account! If you can spare the time, I\'d love to know what zip you inserted to achieve this!');
+            res.status(500).json('Somethings gone terribly wrong and you\'ve reached a case in a switch statement for which I did not account! If you can spare the time, I\'d love to know what zip you inserted to achieve this!');
     }   
 }
 
 function deleteZipcode(req, res){
     if(cacheOfZips[req.params.zipcode]==undefined){
         res.status(404).json(`${req.params.zipcode} is not present in collection --> cannot delete.`)
+        return
     }
     delete cacheOfZips[req.params.zipcode];
     if(cacheOfZips[req.params.zipcode]===undefined){
@@ -86,6 +88,7 @@ function displayZipcodes(req, res){
     let zips = Object.keys(cacheOfZips).sort();
     if(zips.length < 1){
         res.status(200).json('No zipcodes to display. Please insert zipcode and try again!')
+        return
     }
     let displayString = '';
     let arrayOfRanges = [];
