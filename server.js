@@ -71,7 +71,7 @@ function deleteZipcode(req, res){
     if(cacheOfZips[req.params.zipcode]===undefined){
         res.status(200).json(`Zip code ${req.params.zipcode} deleted.`)
     } else {
-        res.status(404).json('there was an error deleting this zipcode')
+        res.status(500).json('there was an error deleting this zipcode')
     }
 }
 
@@ -90,22 +90,14 @@ function displayZipcodes(req, res){
         res.status(200).json('No zipcodes to display. Please insert zipcode and try again!')
         return
     }
-    let displayString = '';
     let arrayOfRanges = [];
   
-    // keep track of zipcodes you've processed so you don't duplicate your work
-    const seen = new Set();
 
     function addRangeToArray(highest, lowest, array){
         // determine what the given range looks like.
         let range = '';
             range = lowest+'-'+highest;
-        if(seen.has(range)){
-            return;
-        }else {
-            seen.add(range);
             return array.push(range);
-        }
     }
 
     for(let i = 0; i < zips.length; i++){
