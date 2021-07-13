@@ -84,13 +84,16 @@ function hasZipcode(req, res){
 }
 
 function displayZipcodes(req, res){
+  
+    let seen = new Set();
 
     let zips = Object.keys(cacheOfZips);
-    console.log("this is the zips: ", zips)
+
     if(zips.length < 1){
         res.status(200).json('No zipcodes to display. Please insert zipcode and try again!');
         return
     }
+
     let arrayOfRanges = [];
   
 
@@ -100,26 +103,29 @@ function displayZipcodes(req, res){
             range = lowest+'-'+highest;
             return array.push(range);
     }
-
+  
     for(let i = 0; i < zips.length; i++){
+
         let zipcode = parseInt(zips[i]);
+
         if(seen.has(zipcode)){
             continue;
         }
+
         let lowest = zipcode;
         let highest = zipcode;
-        seen.add(highest);
 
+        seen.add(highest);
 
         while(cacheOfZips[highest + 1] !== undefined){
             // if this falls in range with another number in cacheOfZips, look further.
             highest += 1;
-
             seen.add(highest);
         }
 
         while(cacheOfZips[lowest - 1] !== undefined){
             lowest -= 1;
+            seen.add(lowest)
         }
 
         if(highest === lowest){
@@ -130,15 +136,15 @@ function displayZipcodes(req, res){
 
     }
 
+    console.log('this is array of ranges: ', arrayOfRanges)
 
     // now we need to make the string
-    // start string
 
     // if there is only one item, return.
-    if(arrayOfRanges.length ===1){
-        res.status(200).json(arrayOfRanges[0].toString())
+    if(arrayOfRanges.length === 1){
+        res.status(200).json(arrayOfRanges[0].toString());
     } else {
-        res.status(200).json(arrayOfRanges.join(', '))
+        res.status(200).json(arrayOfRanges.join(', '));
     }
 
 }
@@ -151,21 +157,3 @@ module.exports = {
     }
 }
 
-    // for(let j = 0; j < zips.length-1; j++){
-    //     let currentZip = parseInt(zips[j]);
-    //     let k = 1;
-    //     let foundConsecutiveNumber = false;
-    //     // 97011, 98101, 98102, 98103,98117
-    //     while((currentZip+k).toString() === zips[j+k]){
-    //         console.log('inside', k)
-    //         foundConsecutiveNumber = true;
-    //         k++;
-    //     }
-    //     if(foundConsecutiveNumber){
-    //         displayString += currentZip + '-' + zips[j+k-1]+', ';
-    //         j = k;
-    //     } else {
-    //         displayString += currentZip +', ';
-    //     }
-
-    // }
