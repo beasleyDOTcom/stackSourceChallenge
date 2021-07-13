@@ -85,12 +85,11 @@ function hasZipcode(req, res){
 
 function displayZipcodes(req, res){
 
-    let zips = Object.keys(cacheOfZips).sort();
+    let zips = Object.keys(cacheOfZips);
     if(zips.length < 1){
-        res.status(200).json('No zipcodes to display. Please insert zipcode and try again!')
+        res.status(200).json('No zipcodes to display. Please insert zipcode and try again!');
         return
     }
-    let displayString = '';
     let arrayOfRanges = [];
   
     // keep track of zipcodes you've processed so you don't duplicate your work
@@ -100,23 +99,35 @@ function displayZipcodes(req, res){
         // determine what the given range looks like.
         let range = '';
             range = lowest+'-'+highest;
-        if(seen.has(range)){
-            return;
-        }else {
-            seen.add(range);
             return array.push(range);
-        }
+    //     if(seen.has(range)){
+    //         return;
+    //     }else {
+    //         seen.add(range);
+    //         return array.push(range);
+    //     }
     }
 
     for(let i = 0; i < zips.length; i++){
         let zipcode = zips[i];
+        if(seen.has(zipcode)){
+            break;
+        }
+        seen.add(zipcode);
+        console.log('this is zipcode', zipcode)
         let lowest = parseInt(zipcode);
         let highest = parseInt(zipcode);
+        seen.add(highest);
+
 
         while(cacheOfZips[highest + 1] !== undefined){
             // if this falls in range with another number in cacheOfZips, look further.
             highest += 1;
-            i++;
+            seen.add(highest);
+        }
+
+        while(cacheOfZips[lowest - 1] !== undefined){
+            lowest -= 1;
         }
 
         if(highest === lowest){
@@ -127,19 +138,14 @@ function displayZipcodes(req, res){
 
     }
 
+
     // now we need to make the string
+    // start string
 
     // if there is only one item, return.
     if(arrayOfRanges.length ===1){
         res.status(200).json(arrayOfRanges[0].toString())
     } else {
-        // // add middle
-        // for(let i = 1; i < arrayOfRanges.length; i++){
-        //     displayString += ', ' + arrayOfRanges[i];
-        // }
-        // // and end
-        // displayString += ', '+ arrayOfRanges[arrayOfRanges.length-1];
-
         res.status(200).json(arrayOfRanges.join(', '))
     }
 

@@ -115,7 +115,7 @@ describe('/display', () => {
         expect(actual.body).toStrictEqual(expected);
     }); 
 
-    it('should combine zipcodes when possible', async () => {
+    it.only('should combine zipcodes when possible', async () => {
         await mockRequest.put('/insert').send({'zipcode': '98100'})
         await mockRequest.put('/insert').send({'zipcode': '98102'})
         let results = await mockRequest.get('/display');
