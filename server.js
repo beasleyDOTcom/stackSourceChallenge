@@ -84,9 +84,11 @@ function hasZipcode(req, res){
 }
 
 function displayZipcodes(req, res){
+  
     let seen = new Set();
+
     let zips = Object.keys(cacheOfZips);
-    console.log("this is the zips: ", zips)
+
     if(zips.length < 1){
         res.status(200).json('No zipcodes to display. Please insert zipcode and try again!');
         return
@@ -118,7 +120,6 @@ function displayZipcodes(req, res){
         while(cacheOfZips[highest + 1] !== undefined){
             // if this falls in range with another number in cacheOfZips, look further.
             highest += 1;
-
             seen.add(highest);
         }
 
@@ -136,14 +137,14 @@ function displayZipcodes(req, res){
     }
 
     console.log('this is array of ranges: ', arrayOfRanges)
+
     // now we need to make the string
-    // start string
 
     // if there is only one item, return.
     if(arrayOfRanges.length === 1){
-        res.status(200).json(arrayOfRanges[0].toString())
+        res.status(200).json(arrayOfRanges[0].toString());
     } else {
-        res.status(200).json(arrayOfRanges.join(', '))
+        res.status(200).json(arrayOfRanges.join(', '));
     }
 
 }
@@ -156,21 +157,3 @@ module.exports = {
     }
 }
 
-    // for(let j = 0; j < zips.length-1; j++){
-    //     let currentZip = parseInt(zips[j]);
-    //     let k = 1;
-    //     let foundConsecutiveNumber = false;
-    //     // 97011, 98101, 98102, 98103,98117
-    //     while((currentZip+k).toString() === zips[j+k]){
-    //         console.log('inside', k)
-    //         foundConsecutiveNumber = true;
-    //         k++;
-    //     }
-    //     if(foundConsecutiveNumber){
-    //         displayString += currentZip + '-' + zips[j+k-1]+', ';
-    //         j = k;
-    //     } else {
-    //         displayString += currentZip +', ';
-    //     }
-
-    // }
