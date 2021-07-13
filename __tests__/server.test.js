@@ -112,11 +112,18 @@ describe('/display', () => {
 
         let expected = '98101, 98103, 98105';
         let actual = await mockRequest.get('/display');
+        await mockRequest.delete('/delete/98101');
+        await mockRequest.delete('/delete/98103');
+        await mockRequest.delete('/delete/98105');
         expect(actual.body).toStrictEqual(expected);
     }); 
 
-    it.only('should combine zipcodes when possible', async () => {
+    it('should combine zipcodes when possible', async () => {
         await mockRequest.put('/insert').send({'zipcode': '98100'})
+        await mockRequest.put('/insert').send({'zipcode': '98101'})
+        await mockRequest.put('/insert').send({'zipcode': '98103'})
+        await mockRequest.put('/insert').send({'zipcode': '98105'})
+
         await mockRequest.put('/insert').send({'zipcode': '98102'})
         let results = await mockRequest.get('/display');
         expect(results.status).toStrictEqual(200);
@@ -134,8 +141,44 @@ describe('/display', () => {
         await mockRequest.put('/insert').send({'zipcode': '98105'});
 
         let expected = '98101, 98103, 98105';
-        let actual = await mockRequest.get('/display')
+        let actual = await mockRequest.get('/display');
         expect(actual.body).toStrictEqual(expected);
     }); 
+    it('should handle a larger dataset', async () => {
+// inserted in random order but zips are always ordered.... woah!
+        await mockRequest.put('/insert').send({'zipcode': '98201'});
+        await mockRequest.put('/insert').send({'zipcode': '98202'});
+        await mockRequest.put('/insert').send({'zipcode': '98203'});
+        await mockRequest.put('/insert').send({'zipcode': '98205'});
+        await mockRequest.put('/insert').send({'zipcode': '98100'}); 
+        await mockRequest.put('/insert').send({'zipcode': '98302'});
+        await mockRequest.put('/insert').send({'zipcode': '98303'});
+        await mockRequest.put('/insert').send({'zipcode': '98305'});
+        await mockRequest.put('/insert').send({'zipcode': '98101'});
+        await mockRequest.put('/insert').send({'zipcode': '98102'});
+        await mockRequest.put('/insert').send({'zipcode': '98103'});  
+        await mockRequest.put('/insert').send({'zipcode': '98502'});
+        await mockRequest.put('/insert').send({'zipcode': '98503'});
+        await mockRequest.put('/insert').send({'zipcode': '98505'});
+        await mockRequest.put('/insert').send({'zipcode': '98105'});
+        await mockRequest.put('/insert').send({'zipcode': '98106'});
+        await mockRequest.put('/insert').send({'zipcode': '98300'});
+        await mockRequest.put('/insert').send({'zipcode': '98301'});
+        await mockRequest.put('/insert').send({'zipcode': '98400'});
+        await mockRequest.put('/insert').send({'zipcode': '98401'});
+        await mockRequest.put('/insert').send({'zipcode': '98402'});
+        await mockRequest.put('/insert').send({'zipcode': '98403'});
+        await mockRequest.put('/insert').send({'zipcode': '98405'});
+        await mockRequest.put('/insert').send({'zipcode': '98500'});
+        await mockRequest.put('/insert').send({'zipcode': '98107'});
+        await mockRequest.put('/insert').send({'zipcode': '98108'});
+        await mockRequest.put('/insert').send({'zipcode': '98109'});
+        await mockRequest.put('/insert').send({'zipcode': '98200'});
+        await mockRequest.put('/insert').send({'zipcode': '98501'});
+
+        let expected = '98100-98103, 98105-98109, 98200-98203, 98205, 98300-98303, 98305, 98400-98403, 98405, 98500-98503, 98505';
+        let actual = await mockRequest.get('/display');
+        expect(actual.body).toStrictEqual(expected);
+    });
 
 });

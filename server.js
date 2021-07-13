@@ -86,6 +86,7 @@ function hasZipcode(req, res){
 function displayZipcodes(req, res){
 
     let zips = Object.keys(cacheOfZips);
+    console.log("this is the zips: ", zips)
     if(zips.length < 1){
         res.status(200).json('No zipcodes to display. Please insert zipcode and try again!');
         return
@@ -100,29 +101,22 @@ function displayZipcodes(req, res){
         let range = '';
             range = lowest+'-'+highest;
             return array.push(range);
-    //     if(seen.has(range)){
-    //         return;
-    //     }else {
-    //         seen.add(range);
-    //         return array.push(range);
-    //     }
     }
 
     for(let i = 0; i < zips.length; i++){
-        let zipcode = zips[i];
+        let zipcode = parseInt(zips[i]);
         if(seen.has(zipcode)){
-            break;
+            continue;
         }
-        seen.add(zipcode);
-        console.log('this is zipcode', zipcode)
-        let lowest = parseInt(zipcode);
-        let highest = parseInt(zipcode);
+        let lowest = zipcode;
+        let highest = zipcode;
         seen.add(highest);
 
 
         while(cacheOfZips[highest + 1] !== undefined){
             // if this falls in range with another number in cacheOfZips, look further.
             highest += 1;
+
             seen.add(highest);
         }
 
