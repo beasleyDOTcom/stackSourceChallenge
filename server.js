@@ -35,17 +35,15 @@ function validateZipcode(zip){
             return 2
         }
     }
-    
 }
-async function insertZipcode(req, res){
 
-  
+async function insertZipcode(req, res){
     let zip = req.body.zipcode;
     let responseFromValidator = await validateZipcode(zip);
     // console.log('response from validator: ', responseFromValidator, ' this is zip: ', zip)
     switch(responseFromValidator){
         case 0:
-            cacheOfZips[zip] = zip;
+            cacheOfZips[parseInt(zip)] = zip;
             res.status(200).json(`Zip code ${zip} inserted.`);
             break;
         case 1:
@@ -63,6 +61,7 @@ async function insertZipcode(req, res){
 }
 
 function deleteZipcode(req, res){
+
     if(cacheOfZips[req.params.zipcode]==undefined){
         res.status(404).json(`${req.params.zipcode} is not present in collection --> cannot delete.`)
         return
@@ -76,6 +75,7 @@ function deleteZipcode(req, res){
 }
 
 function hasZipcode(req, res){
+
     if(cacheOfZips[req.params.zipcode] !== undefined){
         res.status(200).json('true');
     } else {
@@ -83,11 +83,11 @@ function hasZipcode(req, res){
     }
 }
 
-function displayZipcodes(req, res){
-  
+function displayZipcodes(req, res){ 
+
     let seen = new Set();
 
-    let zips = Object.keys(cacheOfZips);
+    let zips = Object.getOwnPropertyNames(cacheOfZips);
 
     if(zips.length < 1){
         res.status(200).json('No zipcodes to display. Please insert zipcode and try again!');
@@ -95,12 +95,22 @@ function displayZipcodes(req, res){
     }
 
     let arrayOfRanges = [];
-  
+
+    function addZeros(stringifiedNumber){
+        // prefixes zeros to number if necessary
+        let zeros = '';
+        for(let i = stringifiedNumber.length; i < 5; i++){
+            zeros += '0';
+        }
+        return zeros+stringifiedNumber;
+    }
 
     function addRangeToArray(highest, lowest, array){
         // determine what the given range looks like.
+        highest = addZeros(highest.toString());
+        lowest = addZeros(lowest.toString());
         let range = '';
-            range = lowest+'-'+highest;
+            range = lowest + '-' + highest;
             return array.push(range);
     }
   
@@ -129,15 +139,12 @@ function displayZipcodes(req, res){
         }
 
         if(highest === lowest){
-            arrayOfRanges.push(highest);
+            arrayOfRanges.push(addZeros(highest.toString()));
         } else {
             addRangeToArray(highest, lowest, arrayOfRanges);
         }
 
     }
-
-    console.log('this is array of ranges: ', arrayOfRanges)
-
     // now we need to make the string
 
     // if there is only one item, return.

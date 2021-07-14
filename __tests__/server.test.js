@@ -176,7 +176,13 @@ describe('/display', () => {
         await mockRequest.put('/insert').send({'zipcode': '98200'});
         await mockRequest.put('/insert').send({'zipcode': '98501'});
 
-        let expected = '98100-98103, 98105-98109, 98200-98203, 98205, 98300-98303, 98305, 98400-98403, 98405, 98500-98503, 98505';
+        await mockRequest.put('/insert').send({'zipcode': '08400'});
+        await mockRequest.put('/insert').send({'zipcode': '08401'});
+        await mockRequest.put('/insert').send({'zipcode': '08402'});
+        await mockRequest.put('/insert').send({'zipcode': '08403'});
+        await mockRequest.put('/insert').send({'zipcode': '08405'});
+
+        let expected = '08400-08403, 08405, 98100-98103, 98105-98109, 98200-98203, 98205, 98300-98303, 98305, 98400-98403, 98405, 98500-98503, 98505';
         let actual = await mockRequest.get('/display');
         expect(actual.body).toStrictEqual(expected);
     });
