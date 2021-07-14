@@ -63,14 +63,14 @@ async function insertZipcode(req, res){
 function deleteZipcode(req, res){
 
     if(cacheOfZips[req.params.zipcode]==undefined){
-        res.status(404).json(`${req.params.zipcode} is not present in collection --> cannot delete.`)
+        res.status(404).json(`${req.params.zipcode} is not present in collection --> cannot delete.`);
         return
     }
     delete cacheOfZips[req.params.zipcode];
     if(cacheOfZips[req.params.zipcode]===undefined){
-        res.status(200).json(`Zip code ${req.params.zipcode} deleted.`)
+        res.status(200).json(`Zip code ${req.params.zipcode} deleted.`);
     } else {
-        res.status(500).json('there was an error deleting this zipcode')
+        res.status(500).json('there was an error deleting this zipcode');
     }
 }
 
@@ -85,8 +85,6 @@ function hasZipcode(req, res){
 
 function displayZipcodes(req, res){ 
 
-    let seen = new Set();
-
     let zips = Object.getOwnPropertyNames(cacheOfZips);
 
     if(zips.length < 1){
@@ -96,19 +94,8 @@ function displayZipcodes(req, res){
 
     let arrayOfRanges = [];
 
-    function addZeros(stringifiedNumber){
-        // prefixes zeros to number if necessary
-        let zeros = '';
-        for(let i = stringifiedNumber.length; i < 5; i++){
-            zeros += '0';
-        }
-        return zeros+stringifiedNumber;
-    }
-
     function addRangeToArray(highest, lowest, array){
         // determine what the given range looks like.
-        highest = addZeros(highest.toString());
-        lowest = addZeros(lowest.toString());
         let range = '';
             range = lowest + '-' + highest;
             return array.push(range);
@@ -117,31 +104,18 @@ function displayZipcodes(req, res){
     for(let i = 0; i < zips.length; i++){
 
         let zipcode = parseInt(zips[i]);
-
-        if(seen.has(zipcode)){
-            continue;
-        }
-
-        let lowest = zipcode;
         let highest = zipcode;
-
-        seen.add(highest);
 
         while(cacheOfZips[highest + 1] !== undefined){
             // if this falls in range with another number in cacheOfZips, look further.
             highest += 1;
-            seen.add(highest);
+            i++;
         }
 
-        while(cacheOfZips[lowest - 1] !== undefined){
-            lowest -= 1;
-            seen.add(lowest)
-        }
-
-        if(highest === lowest){
-            arrayOfRanges.push(addZeros(highest.toString()));
+        if(highest === zipcode){
+            arrayOfRanges.push(cacheOfZips[highest]);
         } else {
-            addRangeToArray(highest, lowest, arrayOfRanges);
+            addRangeToArray(cacheOfZips[highest], cacheOfZips[zipcode], arrayOfRanges);
         }
 
     }
